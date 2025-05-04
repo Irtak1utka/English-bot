@@ -19,13 +19,24 @@ def start_message(message):
     bot.send_message(message.chat.id, 'Привет')
 
 
+def random_word_from_list():
+    global button_list
+    transtation_word = random.choice(list(dictionary.keys()))
+    button_list.append(transtation_word)
+    bot.send_message(message.chat.id, text=transtation_word)
+
+    button_list.append(dictionary[transtation_word])
+    c_distionary = list(dictionary.values()).copy()
+    other_3_word = random.choices(c_distionary, 3)
+    button_list += other_3_word
+    random.shuffle(button_list)
+
+
 @bot.message_handler(commands=['cards'])
 def try_card(message):
     global learning_mode
     learning_mode = True
-    a = random.choice(list(dictionary.keys()))
-    button_list.append(a)
-    bot.send_message(message.chat.id, text=a)
+    random_word_from_list()
 
 
 @bot.message_handler(content_types='text')
@@ -37,11 +48,15 @@ def probably(message):
             exit()
         else:
             markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-            for i in range(3):
-                button_list.append(random.choice(list(dictionary.keys())))
-            random.shuffle(button_list)
-            for i in range(4):
-                item_i = types.KeyboardButton(dictionary[button_list[i]])
+            for el in button_list:
+                item_i = types.KeyboardButton(el)
                 markup.add(item_i)
+    # for i in range(3):
+    #     button_list.append(random.choice(list(dictionary.keys())))
+    # random.shuffle(button_list)
+    # for i in range(4):
+    #     item_i = types.KeyboardButton(dictionary[button_list[i]])
+    #     markup.add(item_i)
+
 
 bot.infinity_polling()
