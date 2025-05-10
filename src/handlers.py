@@ -106,7 +106,7 @@ def register_handlers(client, Session, NON_IMAGE_PATH, MAIN_MENU_IMG_PATH, STARS
             await send_main_menu(event)
         else:
             # Отправляем новое сообщение с предложением зарегистрироваться
-            await client.send_message(event.chat_id, get_text(language, 'register_message'),
+            await client.edit_message(event.chat_id, event.message_id, get_text(language, 'register_message'),
                                       buttons=[[Button.inline(get_text(language, 'register'), data=b"Register")]])
         session.close()
 
@@ -563,7 +563,7 @@ def register_handlers(client, Session, NON_IMAGE_PATH, MAIN_MENU_IMG_PATH, STARS
                 if user_id in password_required_after_menu and password_required_after_menu[user_id]:
                     await event.respond(get_text(language, 'enter_new_password'))
                 else:
-                    await send_main_menu(event)
+                    await send_main_menu_new_message(event)
             else:
                 await event.respond(get_text(language, 'register_message'),
                                     buttons=[[Button.inline(get_text(language, 'register'), data=b"Register")]])

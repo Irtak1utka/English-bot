@@ -765,7 +765,7 @@ async def language_selection_handler(event):
         await send_main_menu(event)
     else:
         # Отправляем новое сообщение с предложением зарегистрироваться
-        await client.send_message(event.chat_id, get_text(language, 'register_message'),
+        await client.edit_message(event.chat_id, event.message_id, get_text(language, 'register_message'),
                                   buttons=[[Button.inline(get_text(language, 'register'), data=b"Register")]])
 
 
@@ -1235,7 +1235,7 @@ async def start(event):
             if user_id in password_required_after_menu and password_required_after_menu[user_id]:
                 await event.respond(get_text(language, 'enter_new_password'))
             else:
-                await send_main_menu(event)
+                await send_main_menu_new_message(event)
         else:
             await event.respond(get_text(language, 'register_message'),
                                 buttons=[[Button.inline(get_text(language, 'register'), data=b"Register")]])
