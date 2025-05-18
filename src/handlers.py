@@ -5,6 +5,7 @@ import random
 import re  # Import the regular expression module
 
 from telethon import events, Button
+# from telethon.tl.functions.channels.delete_messages import DeleteMessagesRequest
 from PIL import Image
 
 from db_models import UserTg, UserBot, Card, Collection, Review
@@ -13,8 +14,7 @@ from keyboards import create_main_menu_keyboard, create_back_to_main_menu_keyboa
     create_language_selection_keyboard, create_my_account_keyboard, \
     create_language_selection_keyboard_with_back, create_add_cards_keyboard, create_add_image_keyboard, \
     create_card_saved_keyboard, create_learning_menu_keyboard, create_edit_modules_keyboard, create_module_keyboard
-from localization import get_text
-
+from localization import get_text, translate_images
 
 # Состояния
 registration_state = {}
@@ -26,6 +26,7 @@ module_creation_state = {}
 card_creation_state = {}
 module_view_state = {}
 card_message_ids = {}
+find_landuage = ""
 
 CARDS_FOLDER = "cards_folder"
 
@@ -69,26 +70,38 @@ def register_handlers(client, Session, NON_IMAGE_PATH, MAIN_MENU_IMG_PATH, STARS
         premium_date = user_bot.premium.strftime("%d.%m.%Y") if user_bot.premium else "0"
 
         account_info = get_text(language, 'my_account_info', user_id, nick, date, count_of_cards, rating,
-                                 premium_date)
+                                premium_date)
 
         await client.edit_message(event.chat_id, event.message_id, account_info,
                                   buttons=create_my_account_keyboard(language), file=MY_ACC_IMG_PATH)
+
+        # await client.delete_messages(event.chat_id, event.message_id)
         session.close()
 
     @client.on(events.CallbackQuery(data=b"change_language"))
     async def change_language_handler(event):
+        # global find_landuage
         session = Session()
         user_id = event.sender_id
         user_tg = session.query(UserTg).filter_by(id=user_id).first()
         language = user_tg.language if user_tg else 'ru'
+        # find_landuage = language
+        # print(language)
         await event.edit(get_text(language, 'change_language'), buttons=create_language_selection_keyboard())
         session.close()
 
     @client.on(events.CallbackQuery(pattern=b"lang_.*"))
     async def language_selection_handler(event):
+        # global CARDS_FOLDER, USUAL_IMG_FOLDER, NON_IMAGE_PATH, \
+        #     MAIN_MENU_IMG_PATH, STARS_LEARN_IMG_PATH, CREATE_NEW_IMG_PATH, INFO_IMG_PATH, \
+        #     HOW_TO_USE_IMG_PATH, MY_ACC_IMG_PATH
         session = Session()
         user_id = event.sender_id
         language = event.data.decode('utf-8').split('_')[1]
+        # print(language, 333)
+        # print(CREATE_NEW_IMG_PATH, "handler1")
+        # translate_images(language)
+        # print(CREATE_NEW_IMG_PATH, "handler2")
         user_tg = session.query(UserTg).filter_by(id=user_id).first()
 
         if not user_tg:
@@ -185,7 +198,8 @@ def register_handlers(client, Session, NON_IMAGE_PATH, MAIN_MENU_IMG_PATH, STARS
             # Устанавливаем состояние ожидания ввода иностранного слова
             card_creation_state[user_id]["state"] = "waiting_for_foreign_word"
             # await event.edit(event.chat_id, event.message_id, get_text(language, 'enter_foreign_word')) #  Заменено
-            await client.send_message(event.chat_id, get_text(language, 'enter_foreign_word'))  # Отправляем новое сообщение
+            await client.send_message(event.chat_id,
+                                      get_text(language, 'enter_foreign_word'))  # Отправляем новое сообщение
         session.close()
 
     @client.on(events.CallbackQuery(data=b"bot_info"))
@@ -272,7 +286,8 @@ def register_handlers(client, Session, NON_IMAGE_PATH, MAIN_MENU_IMG_PATH, STARS
                     await send_main_menu(event)
                 else:
                     await client.edit_message(event.chat_id, event.message_id, get_text(language, 'register_message'),
-                                              buttons=[[Button.inline(get_text(language, 'register'), data=b"Register")]])
+                                              buttons=[
+                                                  [Button.inline(get_text(language, 'register'), data=b"Register")]])
         session.close()
 
     @client.on(events.NewMessage)
@@ -313,6 +328,7 @@ def register_handlers(client, Session, NON_IMAGE_PATH, MAIN_MENU_IMG_PATH, STARS
 
                 language = user_tg.language  # Получаем язык пользователя
                 await send_main_menu_new_message(event)
+                await event.delete()
 
         elif user_id in change_nickname_state:
             if change_nickname_state[user_id] == "waiting_for_new_nickname":
@@ -355,11 +371,14 @@ def register_handlers(client, Session, NON_IMAGE_PATH, MAIN_MENU_IMG_PATH, STARS
                 user_bot.pass_hash = new_hashed_password
                 session.commit()
 
-                # del change_password_state[user_id]
-                # password_required_after_menu[user_id] = False
+                del change_password_state[user_id]
+                password_required_after_menu[user_id] = False
 
                 await event.respond(get_text(language, 'password_changed'),
                                     buttons=create_back_to_main_menu_keyboard(language))
+                await event.delete()
+                # change_password_state[user_id] = "Done"
+
 
         elif user_id in activate_premium_state:
             if activate_premium_state[user_id] == "waiting_for_premium_key":
@@ -394,7 +413,8 @@ def register_handlers(client, Session, NON_IMAGE_PATH, MAIN_MENU_IMG_PATH, STARS
                 # Предлагаем ввести описание модуля или пропустить этот шаг
                 await event.respond(get_text(language, 'enter_module_description'),
                                     buttons=[
-                                        [Button.inline(get_text(language, 'skip_description'), data=b"skip_description")]])
+                                        [Button.inline(get_text(language, 'skip_description'),
+                                                       data=b"skip_description")]])
 
             elif module_creation_state[user_id]["state"] == "waiting_for_module_description":
                 if len(text) <= 100:
@@ -477,7 +497,8 @@ def register_handlers(client, Session, NON_IMAGE_PATH, MAIN_MENU_IMG_PATH, STARS
         user_tg = session.query(UserTg).filter_by(id=user_id).first()
         language = user_tg.language if user_tg else 'ru'
 
-        if user_id in module_creation_state and module_creation_state[user_id]["state"] == "waiting_for_module_description":
+        if user_id in module_creation_state and module_creation_state[user_id][
+            "state"] == "waiting_for_module_description":
             # Создаем модуль в базе данных с пустым описанием
             new_module = Collection(
                 id=generate_unique_module_id(),  # Генерация случайного ID
@@ -697,7 +718,7 @@ def register_handlers(client, Session, NON_IMAGE_PATH, MAIN_MENU_IMG_PATH, STARS
                                           buttons=create_card_saved_keyboard(language))
 
             except Exception as e:
-                1+1
+                1 + 1
         session.close()
 
     @client.on(events.CallbackQuery(data=b"add_next_card_action"))  # Изменено data
@@ -829,7 +850,8 @@ def register_handlers(client, Session, NON_IMAGE_PATH, MAIN_MENU_IMG_PATH, STARS
 
         except Exception as e:
             print(f"Ошибка при отправке/редактировании карточки: {e}")
-            await event.respond(text, buttons=keyboard)  # Отправляем только текст, если не удалось отправить изображение
+            await event.respond(text,
+                                buttons=keyboard)  # Отправляем только текст, если не удалось отправить изображение
         session.close()
 
     @client.on(events.CallbackQuery(pattern=r"flip_(\d+)"))

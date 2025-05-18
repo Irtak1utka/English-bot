@@ -1,3 +1,18 @@
+import os
+
+CARDS_FOLDER = "cards_folder"
+main_language = "ru"
+USUAL_IMG_FOLDER = os.path.join(CARDS_FOLDER, "usual_img_" + main_language)
+NON_IMAGE_PATH = os.path.join(USUAL_IMG_FOLDER, "non_image.png")
+MAIN_MENU_IMG_PATH = os.path.join(USUAL_IMG_FOLDER, "main_menu.png")
+STARS_LEARN_IMG_PATH = os.path.join(USUAL_IMG_FOLDER, "stars_learn.png")
+CREATE_NEW_IMG_PATH = os.path.join(USUAL_IMG_FOLDER, "create_new.png")
+INFO_IMG_PATH = os.path.join(USUAL_IMG_FOLDER, "info.png")
+HOW_TO_USE_IMG_PATH = os.path.join(USUAL_IMG_FOLDER, "how_to_use.png")
+MY_ACC_IMG_PATH = os.path.join(USUAL_IMG_FOLDER, "my_acc.png")
+file_paths = [USUAL_IMG_FOLDER, NON_IMAGE_PATH, MAIN_MENU_IMG_PATH, STARS_LEARN_IMG_PATH, CREATE_NEW_IMG_PATH,
+              INFO_IMG_PATH, HOW_TO_USE_IMG_PATH, MY_ACC_IMG_PATH]
+
 texts = {
     'ru': {
         'start_message': "Привет! Выберите язык интерфейса бота:",
@@ -458,3 +473,22 @@ def get_text(language, key, *args):
     except Exception as e:
         print(f"Error formatting text: {e}")
         return texts.get(language, texts['ru']).get(key, 'Текст не найден')
+
+
+def translate_images(language):
+    print(CREATE_NEW_IMG_PATH, "loc0")
+    main_language = language
+    CARDS_FOLDER = "cards_folder"
+    USUAL_IMG_FOLDER = os.path.join(CARDS_FOLDER, "usual_img_" + main_language)
+    NON_IMAGE_PATH = os.path.join(USUAL_IMG_FOLDER, "non_image.png")
+    MAIN_MENU_IMG_PATH = os.path.join(USUAL_IMG_FOLDER, "main_menu.png")
+    STARS_LEARN_IMG_PATH = os.path.join(USUAL_IMG_FOLDER, "stars_learn.png")
+    CREATE_NEW_IMG_PATH = os.path.join(USUAL_IMG_FOLDER, "create_new.png")
+    INFO_IMG_PATH = os.path.join(USUAL_IMG_FOLDER, "info.png")
+    HOW_TO_USE_IMG_PATH = os.path.join(USUAL_IMG_FOLDER, "how_to_use.png")
+    MY_ACC_IMG_PATH = os.path.join(USUAL_IMG_FOLDER, "my_acc.png")
+    print(USUAL_IMG_FOLDER, "loc1")
+    print(CREATE_NEW_IMG_PATH, "loc2")
+    return CARDS_FOLDER, USUAL_IMG_FOLDER, NON_IMAGE_PATH, \
+        MAIN_MENU_IMG_PATH, STARS_LEARN_IMG_PATH, CREATE_NEW_IMG_PATH, INFO_IMG_PATH, \
+        HOW_TO_USE_IMG_PATH, MY_ACC_IMG_PATH
